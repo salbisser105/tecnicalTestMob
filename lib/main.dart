@@ -3,11 +3,11 @@ import 'package:tecnical_test_mob/src/ui/pages/home_page/home_page.dart';
 import 'package:tecnical_test_mob/src/ui/pages/splash/pre_loader_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const Cat());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class Cat extends StatelessWidget {
+  const Cat({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override

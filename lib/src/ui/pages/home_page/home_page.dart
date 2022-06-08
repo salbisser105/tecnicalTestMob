@@ -1,10 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:tecnical_test_mob/src/ui/pages/detail_page/detail_page.dart';
 
+import '../../../helpers/cat_data_handler.dart';
 import '../../../models/cat_model.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -13,67 +12,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  late Future<List<CatModel>> listado;
-  @override
-  void initState() {
-    super.initState();
-    getCatsList();
-  }
-  Future<List<CatModel>> getCatsList()async{
-    var url = Uri.parse('https://api.thecatapi.com/v1/breeds');
-    final response = await http.get(url,headers:{HttpHeaders.authorizationHeader: 'bda53789-d59e-46cd-9bc4-2936630fde39'} );
-    List<CatModel> catLists = [];
-
-    if (response.statusCode == 200){
-      String body = utf8.decode(response.bodyBytes);
-      final jsonData = jsonDecode(body);
-      for (var item in jsonData){
-        catLists.add(
-          CatModel(
-            adaptability: item["adaptability"],
-            affectionLevel: item["affection_level"] ,
-            childFriendly: item["child_friendly"] ,
-            countryCode:item['country_code'] ?? 'CO',
-            countryCodes:item["country_code"] ,
-            description:item["description"],
-            dogFriendly:item["dog_friendly"],
-            energyLevel:item["energy_level"],
-            experimental:item["experimental"] , 
-            grooming: item["grooming"],
-            hairless: item["hairless"],
-            healthIssues: item["health_issues"],
-            id: item["id"],
-            // image: item["image"]["url"],
-            indoor:item["indoor"] ,
-            intelligence: item["intelligence"] ,
-            lap: item["lap"] ?? 0,
-            lifeSpan: item["life_span"],
-             name: item["name"],
-             natural:item["natural"],
-             origin: item["origin"],
-             rare: item["rare"],
-             referenceImageId: item["reference_image_id"] ?? '',
-             sheddingLevel: item["shedding_level"],
-             shortLegs: item["short_legs"],
-             socialNeeds: item["social_needs"],
-             strangerFriendly: item["stranger_friendly"],
-             suppressedTail: item["suppressed_tail"] ,
-             temperament: item["temperament"],
-             vetstreetUrl: item["vetstreet_url"] ?? '',
-             wikipediaUrl:item["wikipedia_url"] ?? '' ,
-             bidability: item["bidability"] ?? 0,
-             catFriendly: item["cat_friendly"] ?? 0)
-        );
-        print('eso');
-      }
-
-    }else{
-      throw Exception('Fallo la conexión');
-    }
-    return catLists;
-  }
-
+  // String _searchText = '';
+  List names = ['Abyssian', 'Persa', 'Crack', 'Chetaah'];
+  // List filteredNames = [];'
+  final controller = TextEditingController();
+  Future<List<CatModel>> cats = DataHandler.getCatsList();
 
   @override
   Widget build(BuildContext context) {
@@ -82,23 +25,128 @@ class _HomePageState extends State<HomePage> {
         title: const Center(child: Text('Catbreeds')),
         automaticallyImplyLeading: false,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 15),
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              width: MediaQuery.of(context).size.width,
-              child: TextFormField(
-                decoration: const InputDecoration(
-                    hintText: 'Buscar',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.search)),
-              )),
-          const Center(
-            child: Text('hola'),
-          )
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 15),
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                width: MediaQuery.of(context).size.width,
+                child: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                      hintText: 'Buscar',
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.search)),
+                )),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: FutureBuilder(
+                future: cats,
+                builder: (context, snapshot) {
+                  if (snapshot.data != null) {
+                    var generalInfo = snapshot.data as List<CatModel>;
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: ListView.builder(
+                        itemCount: generalInfo.length,
+                        itemBuilder: (context, index) {
+                          var catInfo = generalInfo[index];
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DetailPage(
+                                              title: catInfo.name,
+                                              description: catInfo.description,
+                                              url: catInfo.image.url,
+                                              countryCode: catInfo.countryCode,
+                                              adaptabilidad: catInfo
+                                                  .adaptability
+                                                  .toString(),
+                                              inteligencia: catInfo.intelligence
+                                                  .toString(),
+                                              tiempoDeVida: catInfo.lifeSpan)));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.black,
+                                        width: 2,
+                                      ),
+                                      color: Colors.blueGrey,
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Text(catInfo.name),
+                                          const Text('Mas...')
+                                        ],
+                                      ),
+                                      SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.2,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Image.network(
+                                            catInfo.image.url,
+                                            fit: BoxFit.contain,
+                                          )),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Text('Pais de origen\n' +
+                                              catInfo.countryCode),
+                                          Text('Inteligencia: ' +
+                                              catInfo.intelligence.toString()),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const Divider()
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  }
+                  return const CircularProgressIndicator();
+                },
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
+
+  // void searchCat(String query) {
+  //   // List<CatModel> tmp =  await cats;
+  //   final suggestions = names.where((element) {
+  //     final catName = element.name.toLowerCase();
+  //     final input = query.toLowerCase();
+
+  //     return catName.contains(input);
+  //   }).toList();
+
+  //   setState((() => cats = suggestions as Future<List<CatModel>>));
+  // }
 }
